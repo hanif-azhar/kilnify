@@ -1,0 +1,92 @@
+{
+  "category": "kiln_fuel",
+  "description": "Kiln and dryer fuel combustion factors (Scope 1) and on-site mobile equipment fuel factors.",
+  "factors": [
+    {
+      "sub_category": "coal",
+      "factor_value": 2540.0,
+      "unit": "kgCO2e/tonne_fuel",
+      "factor_value_gj": 94.6,
+      "unit_gj": "kgCO2e/GJ",
+      "source": "IPCC 2006",
+      "year": 2006,
+      "applicable_facility_types": ["cement_plant", "grinding_plant"]
+    },
+    {
+      "sub_category": "petcoke",
+      "factor_value": 3150.0,
+      "unit": "kgCO2e/tonne_fuel",
+      "factor_value_gj": 97.5,
+      "unit_gj": "kgCO2e/GJ",
+      "source": "IPCC 2006",
+      "year": 2006,
+      "applicable_facility_types": ["cement_plant", "grinding_plant"]
+    },
+    {
+      "sub_category": "natural_gas",
+      "factor_value": 1900.0,
+      "unit": "kgCO2e/tonne_fuel",
+      "factor_value_gj": 56.1,
+      "unit_gj": "kgCO2e/GJ",
+      "source": "IPCC 2006",
+      "year": 2006,
+      "applicable_facility_types": ["cement_plant", "grinding_plant"]
+    },
+    {
+      "sub_category": "hfo",
+      "factor_value": 3150.0,
+      "unit": "kgCO2e/tonne_fuel",
+      "factor_value_gj": 77.4,
+      "unit_gj": "kgCO2e/GJ",
+      "source": "IPCC 2006",
+      "year": 2006,
+      "applicable_facility_types": ["cement_plant", "grinding_plant"]
+    },
+    {
+      "sub_category": "diesel",
+      "factor_value": 2680.0,
+      "unit": "kgCO2e/tonne_fuel",
+      "factor_value_gj": 74.1,
+      "unit_gj": "kgCO2e/GJ",
+      "source": "DEFRA 2024",
+      "year": 2024,
+      "applicable_facility_types": ["cement_plant", "grinding_plant", "packing_plant"]
+    },
+    {
+      "sub_category": "rdf",
+      "factor_value": 495.0,
+      "unit": "kgCO2e/tonne_fuel",
+      "source": "Variable (fossil-derived fraction only; biogenic excluded)",
+      "year": 2024,
+      "applicable_facility_types": ["cement_plant"],
+      "notes": "Only the fossil-derived fraction is counted. Biogenic CO2 declared separately."
+    },
+    {
+      "sub_category": "biomass",
+      "factor_value": 0.0,
+      "unit": "kgCO2e/tonne_fuel",
+      "source": "GHG Protocol biogenic rules",
+      "year": 2024,
+      "applicable_facility_types": ["cement_plant"],
+      "notes": "Biogenic CO2 reported separately, excluded from inventory total."
+    }
+  ],
+  "mobile_equipment": [
+    {
+      "sub_category": "diesel",
+      "factor_value": 2.68,
+      "unit": "kgCO2e/liter",
+      "source": "DEFRA 2024",
+      "year": 2024,
+      "applicable_facility_types": ["cement_plant", "grinding_plant", "packing_plant"]
+    },
+    {
+      "sub_category": "petrol",
+      "factor_value": 2.31,
+      "unit": "kgCO2e/liter",
+      "source": "DEFRA 2024",
+      "year": 2024,
+      "applicable_facility_types": ["cement_plant", "grinding_plant", "packing_plant"]
+    }
+  ]
+}

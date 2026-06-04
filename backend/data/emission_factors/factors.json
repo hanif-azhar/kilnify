@@ -1,0 +1,41 @@
+{
+  "description": "General emission factors: electricity grid, transport, packaging, travel, commuting, refrigerants.",
+  "electricity": [
+    { "sub_category": "java_bali", "factor_value": 0.850, "unit": "kgCO2e/kWh", "source": "PLN RUPTL 2023", "year": 2023, "applicable_facility_types": ["cement_plant", "grinding_plant", "packing_plant"] },
+    { "sub_category": "sumatra", "factor_value": 0.790, "unit": "kgCO2e/kWh", "source": "PLN RUPTL 2023", "year": 2023, "applicable_facility_types": ["cement_plant", "grinding_plant", "packing_plant"] },
+    { "sub_category": "kalimantan", "factor_value": 0.920, "unit": "kgCO2e/kWh", "source": "PLN RUPTL 2023", "year": 2023, "applicable_facility_types": ["cement_plant", "grinding_plant", "packing_plant"] },
+    { "sub_category": "national", "factor_value": 0.870, "unit": "kgCO2e/kWh", "source": "MEMR / IEA 2023", "year": 2023, "applicable_facility_types": ["cement_plant", "grinding_plant", "packing_plant"] },
+    { "sub_category": "diesel_genset", "factor_value": 0.700, "unit": "kgCO2e/kWh", "source": "IPCC 2006", "year": 2006, "applicable_facility_types": ["cement_plant", "grinding_plant", "packing_plant"] }
+  ],
+  "transport_outbound": [
+    { "sub_category": "truck_heavy_over_32t", "factor_value": 0.062, "unit": "kgCO2e/tonne_km", "source": "DEFRA 2024", "year": 2024, "applicable_facility_types": ["cement_plant", "grinding_plant", "packing_plant"] },
+    { "sub_category": "truck_heavy_16_32t", "factor_value": 0.096, "unit": "kgCO2e/tonne_km", "source": "DEFRA 2024", "year": 2024, "applicable_facility_types": ["cement_plant", "grinding_plant", "packing_plant"] },
+    { "sub_category": "train_freight", "factor_value": 0.028, "unit": "kgCO2e/tonne_km", "source": "DEFRA 2024", "year": 2024, "applicable_facility_types": ["cement_plant", "grinding_plant", "packing_plant"] },
+    { "sub_category": "ship_handysize", "factor_value": 0.011, "unit": "kgCO2e/tonne_km", "source": "DEFRA 2024", "year": 2024, "applicable_facility_types": ["cement_plant", "grinding_plant", "packing_plant"] },
+    { "sub_category": "ship_supramax", "factor_value": 0.009, "unit": "kgCO2e/tonne_km", "source": "DEFRA 2024", "year": 2024, "applicable_facility_types": ["cement_plant", "grinding_plant", "packing_plant"] }
+  ],
+  "packaging": [
+    { "sub_category": "paper_bag_50kg", "factor_value": 0.55, "unit": "kgCO2e/unit", "source": "Ecoinvent 3.9", "year": 2023, "applicable_facility_types": ["grinding_plant", "packing_plant"] },
+    { "sub_category": "paper_bag_40kg", "factor_value": 0.44, "unit": "kgCO2e/unit", "source": "Ecoinvent 3.9", "year": 2023, "applicable_facility_types": ["grinding_plant", "packing_plant"] },
+    { "sub_category": "pp_bag_50kg", "factor_value": 0.38, "unit": "kgCO2e/unit", "source": "Ecoinvent 3.9", "year": 2023, "applicable_facility_types": ["grinding_plant", "packing_plant"] },
+    { "sub_category": "big_bag_1t", "factor_value": 14.0, "unit": "kgCO2e/unit", "source": "Ecoinvent 3.9", "year": 2023, "applicable_facility_types": ["grinding_plant", "packing_plant"] },
+    { "sub_category": "bulk_dispatch", "factor_value": 0.0, "unit": "kgCO2e/unit", "source": "-", "year": 2024, "applicable_facility_types": ["grinding_plant", "packing_plant"] }
+  ],
+  "travel": [
+    { "sub_category": "flight_short_haul", "factor_value": 0.255, "unit": "kgCO2e/passenger_km", "source": "DEFRA 2024", "year": 2024, "applicable_facility_types": ["cement_plant", "grinding_plant", "packing_plant"] },
+    { "sub_category": "flight_long_haul", "factor_value": 0.195, "unit": "kgCO2e/passenger_km", "source": "DEFRA 2024", "year": 2024, "applicable_facility_types": ["cement_plant", "grinding_plant", "packing_plant"] },
+    { "sub_category": "train", "factor_value": 0.041, "unit": "kgCO2e/passenger_km", "source": "DEFRA 2024", "year": 2024, "applicable_facility_types": ["cement_plant", "grinding_plant", "packing_plant"] },
+    { "sub_category": "car_petrol", "factor_value": 0.192, "unit": "kgCO2e/km", "source": "DEFRA 2024", "year": 2024, "applicable_facility_types": ["cement_plant", "grinding_plant", "packing_plant"] }
+  ],
+  "commuting": [
+    { "sub_category": "car_petrol", "factor_value": 0.192, "unit": "kgCO2e/km", "source": "DEFRA 2024", "year": 2024, "applicable_facility_types": ["cement_plant", "grinding_plant", "packing_plant"] },
+    { "sub_category": "car_ev", "factor_value": 0.073, "unit": "kgCO2e/km", "source": "DEFRA 2024", "year": 2024, "applicable_facility_types": ["cement_plant", "grinding_plant", "packing_plant"] },
+    { "sub_category": "motorcycle", "factor_value": 0.113, "unit": "kgCO2e/km", "source": "DEFRA 2024", "year": 2024, "applicable_facility_types": ["cement_plant", "grinding_plant", "packing_plant"] },
+    { "sub_category": "public_transit", "factor_value": 0.089, "unit": "kgCO2e/km", "source": "DEFRA 2024", "year": 2024, "applicable_facility_types": ["cement_plant", "grinding_plant", "packing_plant"] }
+  ],
+  "refrigerants": [
+    { "sub_category": "r410a", "factor_value": 2088.0, "unit": "kgCO2e/kg (GWP-100)", "source": "IPCC AR6 2021", "year": 2021, "applicable_facility_types": ["cement_plant", "grinding_plant", "packing_plant"] },
+    { "sub_category": "r32", "factor_value": 771.0, "unit": "kgCO2e/kg (GWP-100)", "source": "IPCC AR6 2021", "year": 2021, "applicable_facility_types": ["cement_plant", "grinding_plant", "packing_plant"] },
+    { "sub_category": "r134a", "factor_value": 1430.0, "unit": "kgCO2e/kg (GWP-100)", "source": "IPCC AR6 2021", "year": 2021, "applicable_facility_types": ["cement_plant", "grinding_plant", "packing_plant"] }
+  ]
+}

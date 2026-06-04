@@ -1,0 +1,41 @@
+{
+  "category": "clinker_process",
+  "description": "Clinker calcination process emission factors (Scope 1, Cement Plant only) and purchased clinker upstream factors (Scope 3, Grinding Plant).",
+  "factors": [
+    {
+      "sub_category": "method_a",
+      "factor_value": 525.0,
+      "unit": "kgCO2e/tonne_clinker",
+      "source": "WBCSD CSI 2022 / GNR global average",
+      "year": 2022,
+      "region": "global",
+      "applicable_facility_types": ["cement_plant"],
+      "notes": "Default clinker-based process emission factor. Plant-specific range 490-540 kgCO2/tonne clinker."
+    },
+    {
+      "sub_category": "method_b_cao_stoichiometry",
+      "factor_value": null,
+      "unit": "kgCO2e/tonne_clinker",
+      "source": "IPCC 2006 Vol.3 Ch.2 (CaO/MgO stoichiometry)",
+      "year": 2006,
+      "region": "plant_specific",
+      "applicable_facility_types": ["cement_plant"],
+      "notes": "Computed: (CaO% * 0.785 + MgO% * 1.092) / 100 * (44/56). Use when lab-certified CaO content is available."
+    },
+    {
+      "sub_category": "supplier_default",
+      "factor_value": 842.0,
+      "unit": "kgCO2e/tonne_clinker",
+      "source": "GNR 2022 global average (process + combustion)",
+      "year": 2022,
+      "region": "global",
+      "applicable_facility_types": ["grinding_plant"],
+      "notes": "Upstream emissions of purchased clinker. Override with supplier-certified EPD factor if available."
+    }
+  ],
+  "constants": {
+    "cao_stoich_factor": 0.785,
+    "mgo_stoich_factor": 1.092,
+    "co2_cao_mw_ratio": 0.7857142857142857
+  }
+}
