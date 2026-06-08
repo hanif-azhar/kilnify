@@ -82,6 +82,31 @@ class EmissionEntry(Base):
     company = relationship("Company", back_populates="emissions")
 
 
+class CustomFactor(Base):
+    """User-added emission factor. Merged with the read-only JSON library.
+
+    Built-in JSON factors stay read-only; these are fully editable/deletable so
+    users can add plant-specific, supplier-certified, or updated factors. A null
+    company_id makes the factor global (available to every facility).
+    """
+    __tablename__ = "custom_factors"
+
+    id = Column(String, primary_key=True, default=_uuid)
+    company_id = Column(String, ForeignKey("companies.id"), nullable=True)  # null = global
+    scope = Column(String, nullable=True)  # "1" | "2" | "3" — for use in Data Entry
+    category = Column(String, nullable=False)
+    sub_category = Column(String, nullable=True)
+    factor_value = Column(Float, nullable=False)
+    unit = Column(String, nullable=True)
+    activity_unit = Column(String, nullable=True)  # so it can drive Data Entry
+    source = Column(String, nullable=True)
+    year = Column(Integer, nullable=True)
+    # Comma-separated facility-type values; empty/null means all facilities.
+    applicable_facility_types = Column(String, nullable=True)
+    notes = Column(String, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
 class Report(Base):
     __tablename__ = "reports"
 

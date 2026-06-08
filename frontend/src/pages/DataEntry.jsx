@@ -20,10 +20,54 @@ const CO2_CAO = 44 / 56;
 
 export default function DataEntry() {
   const { selectedId, selected } = useCompany();
-  const categories = useMemo(
-    () => categoriesForFacility(selected?.facility_type),
-    [selected?.facility_type]
-  );
+  const [customFactors, setCustomFactors] = useState([]);
+
+  useEffect(() => {
+    if (!selectedId) return;
+    api.listCustomFactors(selectedId).then(setCustomFactors).catch(() => {});
+  }, [selectedId]);
+
+  // Catalog categories for this facility, with user-defined custom factors merged
+  // in as extra sub-types (matching category) or as their own custom category.
+  const categories = useMemo(() => {
+    const facility = selected?.facility_type;
+    const base = categoriesForFacility(facility).map((c) => ({ ...c, subTypes: [...c.subTypes] }));
+    const byKey = Object.fromEntries(base.map((c) => [c.key, c]));
+    const synthetic = {};
+
+    for (const cf of customFactors) {
+      const facs = cf.applicable_facility_types || [];
+      if (facility && facs.length > 0 && !facs.includes(facility)) continue;
+      const sub = {
+        value: cf.id,
+        label: `${cf.sub_category || cf.category} (custom)`,
+        ef: cf.factor_value,
+        source: cf.source || "User-defined",
+        activityUnit: cf.activity_unit || undefined,
+        efUnit: cf.unit || undefined,
+        custom: true,
+        subCategoryName: cf.sub_category || null,
+      };
+      if (byKey[cf.category]) {
+        byKey[cf.category].subTypes.push(sub);
+      } else {
+        if (!synthetic[cf.category]) {
+          synthetic[cf.category] = {
+            key: cf.category,
+            label: `${cf.category} (custom)`,
+            scope: cf.scope || "3",
+            facilities: facility ? [facility] : [],
+            activityUnit: cf.activity_unit || "units",
+            efUnit: cf.unit || "kgCO2e/unit",
+            subTypes: [],
+            custom: true,
+          };
+        }
+        synthetic[cf.category].subTypes.push(sub);
+      }
+    }
+    return [...base, ...Object.values(synthetic)];
+  }, [selected?.facility_type, customFactors]);
 
   const [categoryKey, setCategoryKey] = useState("");
   const [subType, setSubType] = useState("");
@@ -43,6 +87,9 @@ export default function DataEntry() {
   const category = categories.find((c) => c.key === categoryKey) || null;
   const sub = category?.subTypes.find((s) => s.value === subType) || null;
   const isMethodB = categoryKey === "clinker_calcination" && subType === "method_b";
+  // Sub-types may override the category's units (e.g. capital goods in USD vs tonnes).
+  const activeActivityUnit = sub?.activityUnit || category?.activityUnit;
+  const activeEfUnit = sub?.efUnit || category?.efUnit;
 
   // Reset the form's category when facility changes (gating may remove it).
   useEffect(() => {
@@ -85,18 +132,22 @@ export default function DataEntry() {
         company_id: selectedId,
         scope: category.scope,
         category: category.key,
-        sub_category: subType,
+        sub_category: sub.custom ? sub.subCategoryName : subType,
         activity_data: Number(activityData),
-        activity_unit: category.activityUnit,
+        activity_unit: activeActivityUnit,
         emission_factor: ef,
-        emission_factor_unit: category.efUnit,
+        emission_factor_unit: activeEfUnit,
         emission_factor_source: sub.source || (isMethodB ? "IPCC 2006 stoichiometry" : "custom"),
         biogenic_co2_kgco2: biogenic,
         period_start: periodStart,
         period_end: periodEnd,
         plant_area: plantArea || null,
         data_quality: dataQuality,
-        calculation_method: isMethodB ? "Method B — CaO content based" : sub.label,
+        calculation_method: sub.custom
+          ? "Custom factor"
+          : isMethodB
+          ? "Method B — CaO content based"
+          : sub.label,
         notes: notes || null,
       };
       const created = await api.createEmission(payload);
@@ -179,7 +230,7 @@ export default function DataEntry() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <Label htmlFor="activity">Activity data ({category?.activityUnit})</Label>
+                  <Label htmlFor="activity">Activity data ({activeActivityUnit})</Label>
                   <Input id="activity" type="number" step="any" min="0" value={activityData} onChange={(e) => setActivityData(e.target.value)} required />
                 </div>
                 <div className="space-y-1.5">
@@ -196,7 +247,7 @@ export default function DataEntry() {
                     onChange={(e) => setEfOverride(e.target.value)}
                     disabled={isMethodB}
                   />
-                  <p className="text-xs text-muted-foreground">{category?.efUnit} · {sub?.source}</p>
+                  <p className="text-xs text-muted-foreground">{activeEfUnit} · {sub?.source}</p>
                 </div>
               </div>
 

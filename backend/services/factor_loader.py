@@ -23,6 +23,7 @@ def load_all_raw() -> dict:
         "clinker": _load_json("clinker_factors.json"),
         "fuel": _load_json("fuel_factors.json"),
         "general": _load_json("factors.json"),
+        "scope3": _load_json("scope3_factors.json"),
     }
 
 
@@ -31,7 +32,8 @@ def flatten_factors() -> List[dict]:
     """Flatten every dataset into a uniform list of factor records.
 
     Each record: {category, sub_category, factor_value, unit, source, year,
-    applicable_facility_types, notes}.
+    applicable_facility_types, notes, editable, id}. Built-in records are
+    read-only (editable=False); user-added factors are merged separately.
     """
     raw = load_all_raw()
     out: List[dict] = []
@@ -46,27 +48,30 @@ def flatten_factors() -> List[dict]:
     for f in raw["fuel"].get("mobile_equipment", []):
         out.append(_normalize("mobile_equipment", f))
 
-    # General: each key is a category mapping to a list.
-    general = raw["general"]
-    for category, items in general.items():
-        if not isinstance(items, list):
-            continue  # skip "description"
-        for f in items:
-            out.append(_normalize(category, f))
+    # General + Scope 3: each key is a category mapping to a list.
+    for dataset in ("general", "scope3"):
+        for category, items in raw[dataset].items():
+            if not isinstance(items, list):
+                continue  # skip "description"
+            for f in items:
+                out.append(_normalize(category, f))
 
     return out
 
 
 def _normalize(category: str, f: dict) -> dict:
     return {
+        "id": None,
         "category": category,
         "sub_category": f.get("sub_category"),
         "factor_value": f.get("factor_value"),
         "unit": f.get("unit"),
+        "scope": f.get("scope"),
         "source": f.get("source"),
         "year": f.get("year"),
         "applicable_facility_types": f.get("applicable_facility_types", []),
         "notes": f.get("notes"),
+        "editable": False,
     }
 
 

@@ -63,6 +63,8 @@ Kilnify supports three facility types within the cement value chain:
 - Total emissions (tCO₂e) with Scope 1 (process / combustion / mobile / fugitive breakdown), Scope 2, and Scope 3
 - Monthly trend chart grouped by period and scope
 - Intensity KPI cards: kgCO₂e/t cement, kgCO₂e/t clinker, clinker-to-cement ratio, specific electricity use
+- Alternative-fuel KPIs: **Thermal Substitution Rate (TSR)** (energy-based), biogenic share of fuel, total kiln thermal energy
+- Scope 3 breakdown by GHG Protocol category (1–15)
 - Top 5 emission hotspots with percentage contribution
 - Recent 10 entries
 - Data quality summary (measured / estimated / calculated counts)
@@ -85,8 +87,9 @@ Kilnify supports three facility types within the cement value chain:
 - Data feeds into intensity metric calculations on dashboard and reports
 
 ### Emission Factor Library
-- Searchable and filterable read-only factor library
-- Covers: clinker process (WBCSD CSI / IPCC 2006), kiln fuels (coal, petcoke, HFO, natural gas, diesel, RDF), Indonesian grid by region (PLN RUPTL 2023), transport (DEFRA 2024), packaging materials (Ecoinvent), employee commuting, business travel, refrigerants
+- Searchable and filterable factor library
+- **User-defined custom factors**: add/edit/delete plant-specific or supplier-certified factors directly in the UI. Custom factors merge into the library (flagged `custom`) and become selectable in Data Entry. Built-in JSON factors stay read-only. Custom factors can be global or scoped to a specific facility.
+- Covers: clinker process (WBCSD CSI / IPCC 2006), kiln fuels (coal, petcoke, HFO, natural gas, diesel, RDF), Indonesian grid by region (PLN RUPTL 2023), transport (DEFRA 2024), packaging materials (Ecoinvent), and the full Scope 3 value chain (purchased goods/SCMs, capital goods, fuel & energy WTT, up/downstream transport, waste, processing & use of sold products, commuting, business travel), refrigerants
 - Each factor shows applicable facility types, value, unit, and source citation
 
 ### Report Generator
@@ -135,7 +138,8 @@ kilnify/
 │   │   └── emission_factors/
 │   │       ├── factors.json          # General factors (transport, commuting, travel, refrigerants)
 │   │       ├── clinker_factors.json  # Clinker process EFs by method and region
-│   │       └── fuel_factors.json     # Kiln and mobile fuel EFs (coal, petcoke, HFO, diesel, RDF)
+│   │       ├── fuel_factors.json     # Kiln and mobile fuel EFs (coal, petcoke, HFO, diesel, RDF)
+│   │       └── scope3_factors.json   # Full Scope 3 value-chain EFs (GHG Protocol Cat 1-11)
 │   ├── services/
 │   │   ├── emission_calculator.py   # Core calculation engine (9 modules)
 │   │   ├── aggregator.py            # Scope breakdown, intensity metrics, hotspots, trend
@@ -420,8 +424,9 @@ All endpoints are prefixed with `/api`. Interactive docs available at `/docs` wh
 | GET | `/api/reports/` | List reports (filter: `company_id`) |
 | POST | `/api/reports/generate` | Generate a report for a period |
 | GET | `/api/reports/{id}` | Get report summary |
-| GET | `/api/reports/{id}/detail` | Full detail with scope sub-type breakdown and intensity metrics |
+| GET | `/api/reports/{id}/detail` | Full detail with scope sub-type breakdown, Scope 3 category breakdown, TSR metrics, and intensity metrics |
 | GET | `/api/reports/{id}/export/csv` | Download entries as CSV |
+| GET | `/api/reports/{id}/export/pdf` | Download a formatted PDF (cover page, executive summary, scope/hotspot tables). Requires `reportlab`. |
 | DELETE | `/api/reports/{id}` | Delete a report |
 
 **Generate body example:**
@@ -439,9 +444,34 @@ All endpoints are prefixed with `/api`. Interactive docs available at `/docs` wh
 
 | Method | Path | Description |
 |---|---|---|
-| GET | `/api/factors/` | List factors (filter: `category`, `search`, `facility_type`) |
-| GET | `/api/factors/categories` | List all available categories |
-| GET | `/api/factors/raw` | Raw factors JSON content |
+| GET | `/api/factors/` | List factors — built-in + custom (filter: `category`, `search`, `facility_type`, `company_id`) |
+| GET | `/api/factors/categories` | List all available categories (built-in + custom) |
+| GET | `/api/factors/raw` | Raw built-in factors JSON content |
+| GET | `/api/factors/custom` | List user-added custom factors (filter: `company_id`) |
+| POST | `/api/factors/custom` | Create a custom factor |
+| PUT | `/api/factors/custom/{id}` | Update a custom factor |
+| DELETE | `/api/factors/custom/{id}` | Delete a custom factor |
+
+Built-in factors from the JSON datasets are **read-only**. Custom factors are stored in the
+database, fully editable, flagged `editable: true` in listings, and become selectable in Data Entry.
+A custom factor with a null `company_id` is **global** (available to every facility); otherwise it
+is scoped to that company. `applicable_facility_types: []` means it applies to all facility types.
+
+**Custom factor POST body example:**
+```json
+{
+  "company_id": "uuid",
+  "scope": "3",
+  "category": "purchased_goods",
+  "sub_category": "supplier_x_slag",
+  "factor_value": 65.0,
+  "unit": "kgCO2e/tonne",
+  "activity_unit": "tonnes",
+  "source": "Supplier EPD 2025",
+  "year": 2025,
+  "applicable_facility_types": ["cement_plant"]
+}
+```
 
 ### Dashboard — `/api/dashboard`
 
@@ -470,6 +500,16 @@ All endpoints are prefixed with `/api`. Interactive docs available at `/docs` wh
   "top_hotspots": [
     { "category": "clinker_calcination", "emissions_tco2e": 78750.0, "percentage": 83.3 }
   ],
+  "scope3_by_category": [
+    { "ghg_category": 1, "label": "Cat 1 — Purchased goods & services", "emissions_tco2e": 1200.0, "percentage": 63.2 },
+    { "ghg_category": 9, "label": "Cat 9 — Downstream transportation & distribution", "emissions_tco2e": 700.0, "percentage": 36.8 }
+  ],
+  "alternative_fuel_metrics": {
+    "total_thermal_gj": 4485.0,
+    "alternative_thermal_gj": 1800.0,
+    "thermal_substitution_rate_pct": 40.13,
+    "biogenic_share_pct": 5.2
+  },
   "recent_entries": [...],
   "data_quality_summary": { "measured": 12, "calculated": 8, "estimated": 3 }
 }
@@ -542,6 +582,32 @@ Emissions = Employees × Avg Distance (km/day) × Working Days × Mode Factor ×
 ```
 Multiplied by 2 for return trip.
 
+### Full Scope 3 Value Chain (GHG Protocol Categories 1–15)
+
+Scope 3 entries are classified by GHG Protocol Corporate Value Chain category for breakdown in the dashboard and reports:
+
+| Cat | Category | Example cement-sector sources |
+|---|---|---|
+| 1 | Purchased goods & services | Gypsum, limestone filler, SCMs (fly ash, GGBFS slag, pozzolan), grinding aids, refractories, packaging, purchased clinker |
+| 2 | Capital goods | Machinery & vehicles (spend-based), structural steel |
+| 3 | Fuel- & energy-related activities | Grid T&D losses, well-to-tank (WTT) of coal / diesel / gas |
+| 4 | Upstream transportation & distribution | Inbound raw material / fuel haulage (tonne·km) |
+| 5 | Waste generated in operations | CKD to landfill, general waste, wastewater |
+| 6 | Business travel | Flights, rail, car (passenger·km) |
+| 7 | Employee commuting | Car, motorcycle, public transit |
+| 9 | Downstream transportation & distribution | Outbound cement dispatch (tonne·km) |
+| 10 | Processing of sold products | Third-party grinding of sold clinker |
+| 11 | Use of sold products | Cement is inert in use (~0); recarbonation disclosed separately if quantified |
+
+All Scope 3 categories use the generic `Emissions = Activity Data × Emission Factor` formula. Categories 8, 12–15 are not modelled (typically immaterial for cement).
+
+### Thermal Substitution Rate (TSR) & Alternative Fuels
+
+```
+TSR = Σ(alternative-fuel thermal energy GJ) / Σ(total kiln-fuel thermal energy GJ)
+```
+Thermal energy is derived from each kiln-fuel entry's mass × net calorific value (GJ/t, IPCC 2006 / GNR). Alternative fuels (RDF, biomass, tires, solvents, etc.) are counted in the numerator; the biogenic share is derived from each entry's disclosed biogenic CO₂. Surfaced on the dashboard and in report detail.
+
 ### Unit Conversions
 - Internal storage: **kgCO₂e**
 - Display / reports: **tCO₂e** (`kg ÷ 1000`)
@@ -575,7 +641,9 @@ Built-in factors stored in `backend/data/emission_factors/`.
 | commuting | car_petrol (0.192), car_ev (0.073), motorcycle (0.113), public_transit (0.089) | DEFRA 2024 |
 | refrigerants | r410a (2,088 GWP), r32 (771 GWP), r134a (1,430 GWP) | IPCC AR6 2021 |
 
-The factor library is **read-only** for end users. To add or update factors, edit the JSON files in `backend/data/emission_factors/` directly.
+The **built-in** factors above are read-only — to change them, edit the JSON files in `backend/data/emission_factors/` directly. The full Scope 3 value-chain factors live in `scope3_factors.json` (GHG Protocol categories 1–11).
+
+End users can also add their own **custom factors** through the UI (Emission Factor Library → *Add factor*) or the `/api/factors/custom` endpoints. Custom factors are stored in the database, are fully editable/deletable, merge into the library listing, and become selectable in Data Entry — without touching the read-only reference data.
 
 ---
 
@@ -628,6 +696,23 @@ The factor library is **read-only** for end users. To add or update factors, edi
 | plant_area | string | Plant area attribution (e.g., Kiln, Raw Mill, Cement Mill) |
 | data_quality | string | "measured", "estimated", or "calculated" |
 | calculation_method | string | Method used (e.g., Method A, Method B) |
+| notes | string | Optional free-text notes |
+| created_at | datetime | Auto-set on creation |
+
+### CustomFactor
+| Field | Type | Description |
+|---|---|---|
+| id | UUID | Primary key |
+| company_id | UUID | Foreign key to Company — `null` makes the factor global (all facilities) |
+| scope | string | "1", "2", or "3" — lets the factor drive Data Entry |
+| category | string | Emission category (existing or new) |
+| sub_category | string | Sub-category label (optional) |
+| factor_value | float | Emission factor value (>= 0) |
+| unit | string | EF unit (e.g., kgCO2e/tonne) |
+| activity_unit | string | Activity unit the factor applies to (optional) |
+| source | string | Source citation (optional) |
+| year | integer | Source/vintage year (optional) |
+| applicable_facility_types | string | Comma-separated facility types; empty = all |
 | notes | string | Optional free-text notes |
 | created_at | datetime | Auto-set on creation |
 
@@ -692,6 +777,7 @@ pytest tests/test_api_emissions.py -v
 | `test_api_reports.py` | Scope sub-type totals, intensity metrics, biogenic disclosure, CSV export |
 | `test_api_factors.py` | Factor values, facility_type filtering, search, categories endpoint |
 | `test_api_dashboard.py` | Scope math, intensity KPIs, monthly trend, hotspots, company isolation |
+| `test_scope3_and_custom_factors.py` | Scope 3 category breakdown, TSR / alternative-fuel metrics, `processing_sold_products` gating, custom factor CRUD + global/company scoping |
 
 ### Test Architecture
 

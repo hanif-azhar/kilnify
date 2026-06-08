@@ -63,8 +63,24 @@ export default function Dashboard() {
             { label: "Fugitive", value: data.scope1_fugitive_tco2e },
           ]}
         />
-        <ScopeCard title="Scope 2 — Electricity" total={data.scope2_tco2e} accent="amber" />
-        <ScopeCard title="Scope 3 — Value Chain" total={data.scope3_tco2e} accent="emerald" />
+        <ScopeCard
+          title="Scope 2 — Electricity"
+          total={data.scope2_tco2e}
+          accent="amber"
+          subRows={(data.scope2_by_category || []).map((c) => ({
+            label: c.category,
+            value: c.emissions_tco2e,
+          }))}
+        />
+        <ScopeCard
+          title="Scope 3 — Value Chain"
+          total={data.scope3_tco2e}
+          accent="emerald"
+          subRows={(data.scope3_by_category || []).map((c) => ({
+            label: c.label,
+            value: c.emissions_tco2e,
+          }))}
+        />
       </div>
 
       {/* Intensity KPIs */}
@@ -90,6 +106,29 @@ export default function Dashboard() {
         />
         <IntensityKPICard title="Biogenic CO₂ (separate)" value={data.biogenic_co2_tco2e} unit="tCO₂" />
       </div>
+
+      {/* Alternative fuel / TSR */}
+      {data.alternative_fuel_metrics && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <IntensityKPICard
+            title="Thermal Substitution Rate"
+            value={data.alternative_fuel_metrics.thermal_substitution_rate_pct}
+            unit="%"
+            benchmark="GCCA 2030 ~30%+"
+            highlight
+          />
+          <IntensityKPICard
+            title="Biogenic share of fuel"
+            value={data.alternative_fuel_metrics.biogenic_share_pct}
+            unit="%"
+          />
+          <IntensityKPICard
+            title="Total kiln thermal energy"
+            value={data.alternative_fuel_metrics.total_thermal_gj}
+            unit="GJ"
+          />
+        </div>
+      )}
 
       {/* Monthly trend */}
       <Card>
@@ -159,6 +198,33 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Scope 3 by GHG Protocol category */}
+      {data.scope3_by_category && data.scope3_by_category.length > 0 && (
+        <Card>
+          <CardContent className="pt-6">
+            <h2 className="font-semibold text-foreground mb-3">Scope 3 by GHG Protocol Category</h2>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Category</TableHead>
+                  <TableHead className="text-right">tCO₂e</TableHead>
+                  <TableHead className="text-right">%</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {data.scope3_by_category.map((c) => (
+                  <TableRow key={c.ghg_category}>
+                    <TableCell>{c.label}</TableCell>
+                    <TableCell className="text-right">{c.emissions_tco2e.toLocaleString()}</TableCell>
+                    <TableCell className="text-right">{c.percentage}%</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Recent entries */}
       <Card>

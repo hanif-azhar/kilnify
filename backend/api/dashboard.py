@@ -44,6 +44,9 @@ def get_dashboard(company_id: Optional[str] = Query(default=None), db: Session =
         "clinker_to_cement_ratio": intensity["clinker_to_cement_ratio"],
         "monthly_trend": aggregator.monthly_trend(entries),
         "top_hotspots": aggregator.top_hotspots(entries),
+        "scope2_by_category": aggregator.emissions_by_category(entries, "2"),
+        "scope3_by_category": aggregator.scope3_category_breakdown(entries),
+        "alternative_fuel_metrics": aggregator.alternative_fuel_metrics(entries),
         "recent_entries": [EmissionOut.model_validate(e).model_dump(mode="json") for e in recent],
         "data_quality_summary": aggregator.data_quality_summary(entries),
     }

@@ -55,6 +55,10 @@ export const api = {
   // Factors
   listFactors: (params) => request(`/factors/${qs(params)}`),
   factorCategories: () => request("/factors/categories"),
+  listCustomFactors: (companyId) => request(`/factors/custom${qs({ company_id: companyId })}`),
+  createCustomFactor: (data) => request("/factors/custom", { method: "POST", body: JSON.stringify(data) }),
+  updateCustomFactor: (id, data) => request(`/factors/custom/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+  deleteCustomFactor: (id) => request(`/factors/custom/${id}`, { method: "DELETE" }),
 
   // Dashboard
   dashboard: (companyId) => request(`/dashboard/${qs({ company_id: companyId })}`),

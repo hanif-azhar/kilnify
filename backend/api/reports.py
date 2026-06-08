@@ -27,6 +27,8 @@ METHODOLOGY_NOTES = [
     "Scope 2 uses the location-based Indonesian PLN regional grid factor by default.",
     "GWP values per IPCC AR6 (2021), GWP-100.",
     "Biogenic CO2 from alternative fuels is excluded from the inventory total and disclosed separately.",
+    "Scope 3 is classified by GHG Protocol Corporate Value Chain category (1-15).",
+    "Thermal Substitution Rate (TSR) is energy-based: alternative-fuel GJ / total kiln-fuel GJ.",
     "Standards: GHG Protocol Corporate Standard, WBCSD CSI / GCCA Cement CO2 Protocol.",
 ]
 
@@ -144,6 +146,9 @@ def report_detail(report_id: str, db: Session = Depends(get_db)):
                 for e in entries
             ],
             "top_hotspots": aggregator.top_hotspots(entries),
+            "scope2_by_category": aggregator.emissions_by_category(entries, "2"),
+            "scope3_by_category": aggregator.scope3_category_breakdown(entries),
+            "alternative_fuel_metrics": aggregator.alternative_fuel_metrics(entries),
             "data_quality_summary": aggregator.data_quality_summary(entries),
             "methodology_notes": METHODOLOGY_NOTES,
             "disclaimer": DISCLAIMER,

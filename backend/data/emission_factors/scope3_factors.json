@@ -1,0 +1,44 @@
+{
+  "description": "Scope 3 value-chain emission factors mapped to GHG Protocol categories (1-15). Cement-sector defaults; override with supplier/EPD data where available.",
+  "purchased_goods": [
+    { "sub_category": "gypsum", "factor_value": 14.0, "unit": "kgCO2e/tonne", "source": "Ecoinvent 3.9 (natural gypsum)", "year": 2023, "applicable_facility_types": ["cement_plant", "grinding_plant", "packing_plant"], "notes": "GHG Cat 1. Mineral setting regulator." },
+    { "sub_category": "limestone_additive", "factor_value": 6.0, "unit": "kgCO2e/tonne", "source": "Ecoinvent 3.9", "year": 2023, "applicable_facility_types": ["cement_plant", "grinding_plant"], "notes": "GHG Cat 1. Limestone filler for blended cements." },
+    { "sub_category": "fly_ash_scm", "factor_value": 4.0, "unit": "kgCO2e/tonne", "source": "Ecoinvent 3.9 (economic allocation)", "year": 2023, "applicable_facility_types": ["cement_plant", "grinding_plant"], "notes": "GHG Cat 1. SCM; low burden as coal-combustion by-product." },
+    { "sub_category": "ggbfs_slag", "factor_value": 80.0, "unit": "kgCO2e/tonne", "source": "Ecoinvent 3.9 (granulation + grinding)", "year": 2023, "applicable_facility_types": ["cement_plant", "grinding_plant"], "notes": "GHG Cat 1. Ground granulated blast-furnace slag SCM." },
+    { "sub_category": "natural_pozzolan", "factor_value": 7.0, "unit": "kgCO2e/tonne", "source": "Ecoinvent 3.9", "year": 2023, "applicable_facility_types": ["cement_plant", "grinding_plant"], "notes": "GHG Cat 1. Natural pozzolan / trass SCM." },
+    { "sub_category": "grinding_aid", "factor_value": 1900.0, "unit": "kgCO2e/tonne", "source": "Ecoinvent 3.9 (organic chemicals)", "year": 2023, "applicable_facility_types": ["cement_plant", "grinding_plant"], "notes": "GHG Cat 1. Cement grinding additives." },
+    { "sub_category": "refractory_brick", "factor_value": 1800.0, "unit": "kgCO2e/tonne", "source": "Ecoinvent 3.9 (magnesia/alumina refractories)", "year": 2023, "applicable_facility_types": ["cement_plant"], "notes": "GHG Cat 1. Kiln refractory lining replacement." }
+  ],
+  "capital_goods": [
+    { "sub_category": "machinery_spend", "factor_value": 0.40, "unit": "kgCO2e/USD", "source": "EXIOBASE EEIO (machinery & equipment)", "year": 2022, "applicable_facility_types": ["cement_plant", "grinding_plant", "packing_plant"], "notes": "GHG Cat 2. Spend-based; emissions per USD of capital machinery." },
+    { "sub_category": "steel_construction", "factor_value": 2400.0, "unit": "kgCO2e/tonne", "source": "worldsteel LCI 2022 (crude steel)", "year": 2022, "applicable_facility_types": ["cement_plant", "grinding_plant", "packing_plant"], "notes": "GHG Cat 2. Structural steel for plant construction." },
+    { "sub_category": "vehicles_spend", "factor_value": 0.35, "unit": "kgCO2e/USD", "source": "EXIOBASE EEIO (motor vehicles)", "year": 2022, "applicable_facility_types": ["cement_plant", "grinding_plant", "packing_plant"], "notes": "GHG Cat 2. Spend-based; mobile plant & haul fleet purchases." }
+  ],
+  "fuel_energy_related": [
+    { "sub_category": "electricity_td_loss", "factor_value": 0.085, "unit": "kgCO2e/kWh", "source": "DEFRA 2024 T&D losses (≈10% of grid EF)", "year": 2024, "applicable_facility_types": ["cement_plant", "grinding_plant", "packing_plant"], "notes": "GHG Cat 3. Grid transmission & distribution losses on purchased electricity." },
+    { "sub_category": "wtt_coal", "factor_value": 200.0, "unit": "kgCO2e/tonne", "source": "DEFRA 2024 WTT (coal)", "year": 2024, "applicable_facility_types": ["cement_plant", "grinding_plant"], "notes": "GHG Cat 3. Well-to-tank (upstream) of kiln coal." },
+    { "sub_category": "wtt_diesel", "factor_value": 0.62, "unit": "kgCO2e/liter", "source": "DEFRA 2024 WTT (diesel)", "year": 2024, "applicable_facility_types": ["cement_plant", "grinding_plant", "packing_plant"], "notes": "GHG Cat 3. Well-to-tank of diesel for mobile equipment & gensets." },
+    { "sub_category": "wtt_natural_gas", "factor_value": 350.0, "unit": "kgCO2e/tonne", "source": "DEFRA 2024 WTT (natural gas)", "year": 2024, "applicable_facility_types": ["cement_plant", "grinding_plant"], "notes": "GHG Cat 3. Well-to-tank of natural gas." }
+  ],
+  "upstream_transport": [
+    { "sub_category": "truck_heavy_over_32t", "factor_value": 0.062, "unit": "kgCO2e/tonne_km", "source": "DEFRA 2024", "year": 2024, "applicable_facility_types": ["cement_plant", "grinding_plant", "packing_plant"], "notes": "GHG Cat 4. Inbound raw material / fuel haulage." },
+    { "sub_category": "train_freight", "factor_value": 0.028, "unit": "kgCO2e/tonne_km", "source": "DEFRA 2024", "year": 2024, "applicable_facility_types": ["cement_plant", "grinding_plant", "packing_plant"], "notes": "GHG Cat 4. Inbound rail freight." },
+    { "sub_category": "ship_handysize", "factor_value": 0.011, "unit": "kgCO2e/tonne_km", "source": "DEFRA 2024", "year": 2024, "applicable_facility_types": ["cement_plant", "grinding_plant", "packing_plant"], "notes": "GHG Cat 4. Inbound bulk sea freight (e.g. imported clinker/coal)." }
+  ],
+  "waste_generated": [
+    { "sub_category": "ckd_landfill", "factor_value": 20.0, "unit": "kgCO2e/tonne", "source": "DEFRA 2024 (mineral waste, landfill)", "year": 2024, "applicable_facility_types": ["cement_plant"], "notes": "GHG Cat 5. Cement kiln dust sent to landfill." },
+    { "sub_category": "general_waste_landfill", "factor_value": 450.0, "unit": "kgCO2e/tonne", "source": "DEFRA 2024 (commercial & industrial waste, landfill)", "year": 2024, "applicable_facility_types": ["cement_plant", "grinding_plant", "packing_plant"], "notes": "GHG Cat 5. General operational waste to landfill." },
+    { "sub_category": "wastewater_treatment", "factor_value": 0.7, "unit": "kgCO2e/m3", "source": "DEFRA 2024 (water treatment)", "year": 2024, "applicable_facility_types": ["cement_plant", "grinding_plant", "packing_plant"], "notes": "GHG Cat 5. Wastewater treatment." }
+  ],
+  "downstream_transport": [
+    { "sub_category": "truck_heavy_over_32t", "factor_value": 0.062, "unit": "kgCO2e/tonne_km", "source": "DEFRA 2024", "year": 2024, "applicable_facility_types": ["cement_plant", "grinding_plant", "packing_plant"], "notes": "GHG Cat 9. Outbound cement dispatch to customers/distributors." },
+    { "sub_category": "train_freight", "factor_value": 0.028, "unit": "kgCO2e/tonne_km", "source": "DEFRA 2024", "year": 2024, "applicable_facility_types": ["cement_plant", "grinding_plant", "packing_plant"], "notes": "GHG Cat 9. Outbound rail freight." },
+    { "sub_category": "ship_handysize", "factor_value": 0.011, "unit": "kgCO2e/tonne_km", "source": "DEFRA 2024", "year": 2024, "applicable_facility_types": ["cement_plant", "grinding_plant", "packing_plant"], "notes": "GHG Cat 9. Outbound bulk sea freight." }
+  ],
+  "processing_sold_products": [
+    { "sub_category": "third_party_grinding", "factor_value": 34.0, "unit": "kgCO2e/tonne_clinker", "source": "Derived: ~40 kWh/t grinding × 0.85 kgCO2e/kWh grid", "year": 2024, "applicable_facility_types": ["cement_plant"], "notes": "GHG Cat 10. Grinding of clinker sold to third-party finishing mills." }
+  ],
+  "use_sold_products": [
+    { "sub_category": "cement_inert_use", "factor_value": 0.0, "unit": "kgCO2e/tonne", "source": "GHG Protocol Scope 3 guidance", "year": 2024, "applicable_facility_types": ["cement_plant", "grinding_plant", "packing_plant"], "notes": "GHG Cat 11. Cement is inert in use; direct use-phase emissions ~0. Recarbonation (CO2 uptake) reported separately as a sink if quantified." }
+  ]
+}

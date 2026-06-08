@@ -149,6 +149,51 @@ class ReportOut(BaseModel):
     generated_at: Optional[datetime] = None
 
 
+# --------------------------- CustomFactor ---------------------------
+class CustomFactorBase(BaseModel):
+    company_id: Optional[str] = None  # null = global, available to every facility
+    scope: Optional[Scope] = None
+    category: str
+    sub_category: Optional[str] = None
+    factor_value: float = Field(ge=0)
+    unit: Optional[str] = None
+    activity_unit: Optional[str] = None
+    source: Optional[str] = None
+    year: Optional[int] = None
+    # Accept a list from the client; stored as a comma-separated string in the DB.
+    applicable_facility_types: List[str] = Field(default_factory=list)
+    notes: Optional[str] = None
+
+
+class CustomFactorCreate(CustomFactorBase):
+    pass
+
+
+class CustomFactorOut(CustomFactorBase):
+    id: str
+    editable: bool = True
+    created_at: Optional[datetime] = None
+
+    @staticmethod
+    def from_orm_model(m) -> "CustomFactorOut":
+        """Build from an ORM CustomFactor, splitting the facility-type string."""
+        return CustomFactorOut(
+            id=m.id,
+            company_id=m.company_id,
+            scope=m.scope,
+            category=m.category,
+            sub_category=m.sub_category,
+            factor_value=m.factor_value,
+            unit=m.unit,
+            activity_unit=m.activity_unit,
+            source=m.source,
+            year=m.year,
+            applicable_facility_types=[t for t in (m.applicable_facility_types or "").split(",") if t],
+            notes=m.notes,
+            created_at=m.created_at,
+        )
+
+
 class HotspotOut(BaseModel):
     category: str
     emissions_tco2e: float

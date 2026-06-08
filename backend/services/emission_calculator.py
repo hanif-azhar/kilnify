@@ -25,6 +25,53 @@ GRID_FACTORS = {  # kgCO2e/kWh — PLN RUPTL 2023 / IEA
     "diesel_genset": 0.700,
 }
 
+# Net calorific values (GJ/tonne) for kiln fuels — used for the energy-based
+# Thermal Substitution Rate (TSR). Sources: IPCC 2006 Vol.2, WBCSD CSI GNR.
+FUEL_NCV_GJ_PER_TONNE = {
+    # Conventional fossil fuels
+    "coal": 26.85,
+    "petcoke": 32.3,
+    "natural_gas": 48.0,
+    "hfo": 40.5,
+    "diesel": 43.0,
+    # Alternative fuels (lower, variable calorific value)
+    "rdf": 18.0,
+    "biomass": 15.0,
+    "tires": 28.0,
+    "solvents": 22.0,
+    "animal_meal": 16.0,
+    "agricultural_waste": 13.0,
+    "impregnated_sawdust": 16.0,
+    "msw": 10.0,
+}
+
+# Fuels counted as alternative (non-conventional) for TSR. The biogenic share of
+# these is tracked separately via each entry's biogenic_co2 field.
+ALTERNATIVE_FUELS = {
+    "rdf", "biomass", "tires", "solvents", "animal_meal",
+    "agricultural_waste", "impregnated_sawdust", "msw",
+}
+
+
+def fuel_thermal_energy_gj(sub_category: str, tonnes: float) -> float:
+    """Thermal energy (GJ) from a kiln-fuel quantity. Returns 0 if NCV unknown."""
+    ncv = FUEL_NCV_GJ_PER_TONNE.get((sub_category or "").lower())
+    if ncv is None or tonnes < 0:
+        return 0.0
+    return tonnes * ncv
+
+
+def is_alternative_fuel(sub_category: str) -> bool:
+    """True if the fuel sub-category counts as an alternative (non-conventional) fuel."""
+    return (sub_category or "").lower() in ALTERNATIVE_FUELS
+
+
+def thermal_substitution_rate(alt_thermal_gj: float, total_thermal_gj: float) -> float:
+    """TSR = alternative-fuel thermal energy / total kiln-fuel thermal energy (0..1)."""
+    if total_thermal_gj <= 0:
+        return 0.0
+    return alt_thermal_gj / total_thermal_gj
+
 
 def calculate_emissions(activity_data: float, emission_factor: float) -> float:
     """General formula: Emissions (kgCO2e) = Activity Data x Emission Factor."""
