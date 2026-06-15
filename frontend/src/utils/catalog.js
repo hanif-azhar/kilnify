@@ -2,6 +2,11 @@
 // Mirrors backend FACILITY_RESTRICTED_CATEGORIES — the backend re-validates,
 // this just controls which options the form shows.
 
+// When true, Kilnify is a Scope 3-only tool: Data Entry only offers Scope 3
+// categories and the dashboard hides Scope 1/2 figures. Mirror of the backend
+// SCOPE3_ONLY flag in constants.py — keep the two in sync.
+export const SCOPE3_ONLY = true;
+
 export const FACILITY_TYPES = [
   { value: "cement_plant", label: "Cement Plant (Integrated)" },
   { value: "grinding_plant", label: "Grinding Plant" },
@@ -259,8 +264,9 @@ export const CATEGORIES = [
 ];
 
 export function categoriesForFacility(facilityType) {
-  if (!facilityType) return CATEGORIES;
-  return CATEGORIES.filter((c) => c.facilities.includes(facilityType));
+  const scoped = SCOPE3_ONLY ? CATEGORIES.filter((c) => c.scope === "3") : CATEGORIES;
+  if (!facilityType) return scoped;
+  return scoped.filter((c) => c.facilities.includes(facilityType));
 }
 
 export const facilityLabel = (v) =>

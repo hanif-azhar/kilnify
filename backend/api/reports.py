@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
+from ..constants import SCOPE3_ONLY
 from ..database import get_db
 from ..models import Company, EmissionEntry, ProductionData, Report
 from ..schemas import ReportGenerate, ReportOut
@@ -20,17 +21,27 @@ DISCLAIMER = (
     "regulatory reporting without review by a certified carbon accountant or third-party verifier."
 )
 
-METHODOLOGY_NOTES = [
-    "Calculations follow: Emissions (kgCO2e) = Activity Data x Emission Factor.",
-    "Clinker process emissions use Method A (clinker x default EF 525 kgCO2/t, WBCSD CSI/GNR) "
-    "or Method B (CaO/MgO stoichiometry, IPCC 2006) where plant-specific data exists.",
-    "Scope 2 uses the location-based Indonesian PLN regional grid factor by default.",
-    "GWP values per IPCC AR6 (2021), GWP-100.",
-    "Biogenic CO2 from alternative fuels is excluded from the inventory total and disclosed separately.",
-    "Scope 3 is classified by GHG Protocol Corporate Value Chain category (1-15).",
-    "Thermal Substitution Rate (TSR) is energy-based: alternative-fuel GJ / total kiln-fuel GJ.",
-    "Standards: GHG Protocol Corporate Standard, WBCSD CSI / GCCA Cement CO2 Protocol.",
-]
+if SCOPE3_ONLY:
+    METHODOLOGY_NOTES = [
+        "This report covers Scope 3 (value chain) emissions only.",
+        "Calculations follow: Emissions (kgCO2e) = Activity Data x Emission Factor.",
+        "Scope 3 is classified by GHG Protocol Corporate Value Chain category (1-15).",
+        "GWP values per IPCC AR6 (2021), GWP-100.",
+        "Biogenic CO2 is excluded from the inventory total and disclosed separately.",
+        "Standards: GHG Protocol Corporate Value Chain (Scope 3) Standard, WBCSD CSI / GCCA Cement CO2 Protocol.",
+    ]
+else:
+    METHODOLOGY_NOTES = [
+        "Calculations follow: Emissions (kgCO2e) = Activity Data x Emission Factor.",
+        "Clinker process emissions use Method A (clinker x default EF 525 kgCO2/t, WBCSD CSI/GNR) "
+        "or Method B (CaO/MgO stoichiometry, IPCC 2006) where plant-specific data exists.",
+        "Scope 2 uses the location-based Indonesian PLN regional grid factor by default.",
+        "GWP values per IPCC AR6 (2021), GWP-100.",
+        "Biogenic CO2 from alternative fuels is excluded from the inventory total and disclosed separately.",
+        "Scope 3 is classified by GHG Protocol Corporate Value Chain category (1-15).",
+        "Thermal Substitution Rate (TSR) is energy-based: alternative-fuel GJ / total kiln-fuel GJ.",
+        "Standards: GHG Protocol Corporate Standard, WBCSD CSI / GCCA Cement CO2 Protocol.",
+    ]
 
 
 def _entries_for_period(db: Session, company_id: str, start, end) -> List[EmissionEntry]:
@@ -229,17 +240,26 @@ def export_pdf(report_id: str, db: Session = Depends(get_db)):
 
     # Executive summary
     story.append(Paragraph("Executive Summary", styles["Heading2"]))
-    story.append(Paragraph(f"Total emissions: <b>{report.total_emissions:,.2f} tCO2e</b>", styles["Normal"]))
-    if report.specific_emissions_per_tonne_cement is not None:
-        story.append(Paragraph(f"Specific emissions: {report.specific_emissions_per_tonne_cement:,.2f} kgCO2e/t cement", styles["Normal"]))
-    if report.clinker_to_cement_ratio is not None:
-        story.append(Paragraph(f"Clinker-to-cement ratio: {report.clinker_to_cement_ratio:.2%}", styles["Normal"]))
+    if SCOPE3_ONLY:
+        story.append(Paragraph(f"Total Scope 3 emissions: <b>{report.total_scope3:,.2f} tCO2e</b>", styles["Normal"]))
+    else:
+        story.append(Paragraph(f"Total emissions: <b>{report.total_emissions:,.2f} tCO2e</b>", styles["Normal"]))
+        if report.specific_emissions_per_tonne_cement is not None:
+            story.append(Paragraph(f"Specific emissions: {report.specific_emissions_per_tonne_cement:,.2f} kgCO2e/t cement", styles["Normal"]))
+        if report.clinker_to_cement_ratio is not None:
+            story.append(Paragraph(f"Clinker-to-cement ratio: {report.clinker_to_cement_ratio:.2%}", styles["Normal"]))
     story.append(Spacer(1, 0.4 * cm))
 
     # Scope breakdown table
     story.append(Paragraph("Scope Breakdown (tCO2e)", styles["Heading2"]))
-    scope_table = Table(
-        [
+    if SCOPE3_ONLY:
+        scope_rows = [
+            ["Scope", "tCO2e"],
+            ["Scope 3 — Value Chain", f"{report.total_scope3:,.2f}"],
+            ["TOTAL", f"{report.total_scope3:,.2f}"],
+        ]
+    else:
+        scope_rows = [
             ["Scope", "tCO2e"],
             ["Scope 1 — Process", f"{report.total_scope1_process:,.2f}"],
             ["Scope 1 — Combustion", f"{report.total_scope1_combustion:,.2f}"],
@@ -250,7 +270,7 @@ def export_pdf(report_id: str, db: Session = Depends(get_db)):
             ["Scope 3", f"{report.total_scope3:,.2f}"],
             ["TOTAL", f"{report.total_emissions:,.2f}"],
         ]
-    )
+    scope_table = Table(scope_rows)
     scope_table.setStyle(
         TableStyle(
             [
