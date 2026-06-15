@@ -8,7 +8,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
-from ..constants import FACILITY_RESTRICTED_CATEGORIES
+from ..constants import FACILITY_RESTRICTED_CATEGORIES, SCOPE3_ONLY
 from ..database import get_db
 from ..models import Company, EmissionEntry
 from ..schemas import EmissionCreate, EmissionOut, orm_dict
@@ -17,6 +17,18 @@ from ..services.emission_calculator import calculate_emissions
 router = APIRouter(prefix="/api/emissions", tags=["emissions"])
 
 OUTLIER_MULTIPLIER = 3.0
+
+
+def _check_scope3_only(scope: str) -> None:
+    """Block non-Scope-3 entries when the app is configured Scope 3-only."""
+    if SCOPE3_ONLY and scope != "3":
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                f"Kilnify is configured for Scope 3 only — scope '{scope}' entries "
+                "are not accepted. Only Scope 3 (value chain) emissions may be logged."
+            ),
+        )
 
 
 def _check_facility_gating(category: str, facility_type: str) -> None:
@@ -52,6 +64,7 @@ def create_emission(payload: EmissionCreate, db: Session = Depends(get_db)):
     if not company:
         raise HTTPException(status_code=404, detail="Company not found")
 
+    _check_scope3_only(payload.scope.value)
     _check_facility_gating(payload.category, company.facility_type)
 
     total = calculate_emissions(payload.activity_data, payload.emission_factor)

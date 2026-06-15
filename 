@@ -1,0 +1,22 @@
+[35mbackend/api/dashboard.py[m[36m:[m[32m3[m[36m:[mWith [1;31mSCOPE3_ONLY[m enabled the dashboard is Scope 3-centric: it omits Scope 1/2
+[35mbackend/api/dashboard.py[m[36m:[m[32m12[m[36m:[mfrom ..constants import [1;31mSCOPE3_ONLY[m
+[35mbackend/api/dashboard.py[m[36m:[m[32m38[m[36m:[m        "scope3_only": [1;31mSCOPE3_ONLY[m,
+[35mbackend/api/dashboard.py[m[36m:[m[32m39[m[36m:[m        "total_tco2e": round(breakdown["scope3_tco2e"] if [1;31mSCOPE3_ONLY[m else breakdown["total_tco2e"], 4),
+[35mbackend/api/dashboard.py[m[36m:[m[32m49[m[36m:[m    if not [1;31mSCOPE3_ONLY[m:
+[35mbackend/api/emissions.py[m[36m:[m[32m11[m[36m:[mfrom ..constants import FACILITY_RESTRICTED_CATEGORIES, [1;31mSCOPE3_ONLY[m
+[35mbackend/api/emissions.py[m[36m:[m[32m24[m[36m:[m    if [1;31mSCOPE3_ONLY[m and scope != "3":
+[35mbackend/api/reports.py[m[36m:[m[32m10[m[36m:[mfrom ..constants import [1;31mSCOPE3_ONLY[m
+[35mbackend/api/reports.py[m[36m:[m[32m24[m[36m:[mif [1;31mSCOPE3_ONLY[m:
+[35mbackend/api/reports.py[m[36m:[m[32m243[m[36m:[m    if [1;31mSCOPE3_ONLY[m:
+[35mbackend/api/reports.py[m[36m:[m[32m255[m[36m:[m    if [1;31mSCOPE3_ONLY[m:
+[35mbackend/constants.py[m[36m:[m[32m7[m[36m:[m[1;31mSCOPE3_ONLY[m = True
+[35mtests/conftest.py[m[36m:[m[32m108[m[36m:[m    # Scope 3 entry so the fixture is valid under [1;31mSCOPE3_ONLY[m.
+[35mtests/test_api_dashboard.py[m[36m:[m[32m3[m[36m:[mfrom backend.constants import [1;31mSCOPE3_ONLY[m
+[35mtests/test_api_dashboard.py[m[36m:[m[32m39[m[36m:[m@pytest.mark.skipif([1;31mSCOPE3_ONLY[m, reason="Scope 1/2 intensity hidden in Scope 3-only mode")
+[35mtests/test_api_emissions.py[m[36m:[m[32m3[m[36m:[mfrom backend.constants import [1;31mSCOPE3_ONLY[m
+[35mtests/test_api_emissions.py[m[36m:[m[32m32[m[36m:[m@pytest.mark.skipif(not [1;31mSCOPE3_ONLY[m, reason="Scope 3-only gating disabled")
+[35mtests/test_api_emissions.py[m[36m:[m[32m43[m[36m:[m@pytest.mark.skipif(not [1;31mSCOPE3_ONLY[m, reason="Scope 3-only gating disabled")
+[35mtests/test_api_reports.py[m[36m:[m[32m3[m[36m:[mfrom backend.constants import [1;31mSCOPE3_ONLY[m
+[35mtests/test_api_reports.py[m[36m:[m[32m47[m[36m:[m    if [1;31mSCOPE3_ONLY[m:
+[35mtests/test_scope3_and_custom_factors.py[m[36m:[m[32m4[m[36m:[mfrom backend.constants import [1;31mSCOPE3_ONLY[m
+[35mtests/test_scope3_and_custom_factors.py[m[36m:[m[32m62[m[36m:[m@pytest.mark.skipif([1;31mSCOPE3_ONLY[m, reason="TSR derives from Scope 1 kiln fuel, not collected in Scope 3-only mode")

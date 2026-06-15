@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import {
-  Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis,
+  Bar, BarChart, CartesianGrid, Cell, Legend, Pie, PieChart,
+  ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from "recharts";
 import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
@@ -13,6 +14,12 @@ import ScopeCard from "../components/ScopeCard.jsx";
 import IntensityKPICard from "../components/IntensityKPICard.jsx";
 import DataQualityBadge from "../components/DataQualityBadge.jsx";
 import FacilityTypeBadge from "../components/FacilityTypeBadge.jsx";
+
+// Stable palette for the Scope 3 category pie + matching table swatches.
+const SCOPE3_COLORS = [
+  "#10b981", "#3b82f6", "#f59e0b", "#ef4444", "#8b5cf6",
+  "#ec4899", "#14b8a6", "#f97316", "#06b6d4", "#84cc16", "#a855f7",
+];
 
 export default function Dashboard() {
   const { selectedId, selected, loading: companyLoading } = useCompany();
@@ -34,6 +41,8 @@ export default function Dashboard() {
     );
   if (!data) return <p className="text-muted-foreground">Loading dashboard…</p>;
 
+  const scope3Only = data.scope3_only;
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -42,7 +51,9 @@ export default function Dashboard() {
           <div className="mt-1">{selected && <FacilityTypeBadge type={selected.facility_type} />}</div>
         </div>
         <div className="text-right">
-          <div className="text-sm text-muted-foreground">Total emissions</div>
+          <div className="text-sm text-muted-foreground">
+            {scope3Only ? "Total Scope 3 emissions" : "Total emissions"}
+          </div>
           <div className="text-3xl font-bold text-primary">
             {data.total_tco2e.toLocaleString(undefined, { maximumFractionDigits: 1 })}
             <span className="text-base font-normal text-muted-foreground ml-1">tCO₂e</span>
@@ -51,27 +62,31 @@ export default function Dashboard() {
       </div>
 
       {/* Scope breakdown */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <ScopeCard
-          title="Scope 1 — Direct"
-          total={data.scope1_tco2e}
-          accent="kiln"
-          subRows={[
-            { label: "Process (calcination)", value: data.scope1_process_tco2e },
-            { label: "Combustion", value: data.scope1_combustion_tco2e },
-            { label: "Mobile", value: data.scope1_mobile_tco2e },
-            { label: "Fugitive", value: data.scope1_fugitive_tco2e },
-          ]}
-        />
-        <ScopeCard
-          title="Scope 2 — Electricity"
-          total={data.scope2_tco2e}
-          accent="amber"
-          subRows={(data.scope2_by_category || []).map((c) => ({
-            label: c.category,
-            value: c.emissions_tco2e,
-          }))}
-        />
+      <div className={`grid grid-cols-1 ${scope3Only ? "md:grid-cols-2" : "md:grid-cols-3"} gap-4`}>
+        {!scope3Only && (
+          <ScopeCard
+            title="Scope 1 — Direct"
+            total={data.scope1_tco2e}
+            accent="kiln"
+            subRows={[
+              { label: "Process (calcination)", value: data.scope1_process_tco2e },
+              { label: "Combustion", value: data.scope1_combustion_tco2e },
+              { label: "Mobile", value: data.scope1_mobile_tco2e },
+              { label: "Fugitive", value: data.scope1_fugitive_tco2e },
+            ]}
+          />
+        )}
+        {!scope3Only && (
+          <ScopeCard
+            title="Scope 2 — Electricity"
+            total={data.scope2_tco2e}
+            accent="amber"
+            subRows={(data.scope2_by_category || []).map((c) => ({
+              label: c.category,
+              value: c.emissions_tco2e,
+            }))}
+          />
+        )}
         <ScopeCard
           title="Scope 3 — Value Chain"
           total={data.scope3_tco2e}
@@ -81,34 +96,39 @@ export default function Dashboard() {
             value: c.emissions_tco2e,
           }))}
         />
+        {scope3Only && (
+          <IntensityKPICard title="Biogenic CO₂ (separate)" value={data.biogenic_co2_tco2e} unit="tCO₂" />
+        )}
       </div>
 
-      {/* Intensity KPIs */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <IntensityKPICard
-          title="Clinker-to-Cement Ratio"
-          value={data.clinker_to_cement_ratio != null ? data.clinker_to_cement_ratio * 100 : null}
-          unit="%"
-          benchmark="65–90%"
-          highlight
-        />
-        <IntensityKPICard
-          title="Per tonne cement"
-          value={data.intensity_kgco2e_per_tonne_cement}
-          unit="kgCO₂e/t"
-          benchmark="GNR ~600"
-        />
-        <IntensityKPICard
-          title="Per tonne clinker (process)"
-          value={data.intensity_kgco2e_per_tonne_clinker}
-          unit="kgCO₂e/t"
-          benchmark="490–540"
-        />
-        <IntensityKPICard title="Biogenic CO₂ (separate)" value={data.biogenic_co2_tco2e} unit="tCO₂" />
-      </div>
+      {/* Intensity KPIs — Scope 1/2-derived, hidden in Scope 3-only mode */}
+      {!scope3Only && (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <IntensityKPICard
+            title="Clinker-to-Cement Ratio"
+            value={data.clinker_to_cement_ratio != null ? data.clinker_to_cement_ratio * 100 : null}
+            unit="%"
+            benchmark="65–90%"
+            highlight
+          />
+          <IntensityKPICard
+            title="Per tonne cement"
+            value={data.intensity_kgco2e_per_tonne_cement}
+            unit="kgCO₂e/t"
+            benchmark="GNR ~600"
+          />
+          <IntensityKPICard
+            title="Per tonne clinker (process)"
+            value={data.intensity_kgco2e_per_tonne_clinker}
+            unit="kgCO₂e/t"
+            benchmark="490–540"
+          />
+          <IntensityKPICard title="Biogenic CO₂ (separate)" value={data.biogenic_co2_tco2e} unit="tCO₂" />
+        </div>
+      )}
 
-      {/* Alternative fuel / TSR */}
-      {data.alternative_fuel_metrics && (
+      {/* Alternative fuel / TSR — kiln-fuel (Scope 1) derived */}
+      {!scope3Only && data.alternative_fuel_metrics && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <IntensityKPICard
             title="Thermal Substitution Rate"
@@ -133,7 +153,9 @@ export default function Dashboard() {
       {/* Monthly trend */}
       <Card>
         <CardContent className="pt-6">
-          <h2 className="font-semibold text-foreground mb-3">Monthly Emissions Trend (tCO₂e)</h2>
+          <h2 className="font-semibold text-foreground mb-3">
+            {scope3Only ? "Monthly Scope 3 Trend (tCO₂e)" : "Monthly Emissions Trend (tCO₂e)"}
+          </h2>
           {data.monthly_trend.length === 0 ? (
             <p className="text-sm text-muted-foreground">No emission entries yet.</p>
           ) : (
@@ -144,8 +166,8 @@ export default function Dashboard() {
                 <YAxis fontSize={12} />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="scope1" stackId="a" fill="#1f6feb" name="Scope 1" />
-                <Bar dataKey="scope2" stackId="a" fill="#f59e0b" name="Scope 2" />
+                {!scope3Only && <Bar dataKey="scope1" stackId="a" fill="#1f6feb" name="Scope 1" />}
+                {!scope3Only && <Bar dataKey="scope2" stackId="a" fill="#f59e0b" name="Scope 2" />}
                 <Bar dataKey="scope3" stackId="a" fill="#10b981" name="Scope 3" />
               </BarChart>
             </ResponsiveContainer>
@@ -199,29 +221,67 @@ export default function Dashboard() {
         </Card>
       </div>
 
-      {/* Scope 3 by GHG Protocol category */}
+      {/* Scope 3 by GHG Protocol category — composition pie + detail table */}
       {data.scope3_by_category && data.scope3_by_category.length > 0 && (
         <Card>
           <CardContent className="pt-6">
-            <h2 className="font-semibold text-foreground mb-3">Scope 3 by GHG Protocol Category</h2>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Category</TableHead>
-                  <TableHead className="text-right">tCO₂e</TableHead>
-                  <TableHead className="text-right">%</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {data.scope3_by_category.map((c) => (
-                  <TableRow key={c.ghg_category}>
-                    <TableCell>{c.label}</TableCell>
-                    <TableCell className="text-right">{c.emissions_tco2e.toLocaleString()}</TableCell>
-                    <TableCell className="text-right">{c.percentage}%</TableCell>
+            <h2 className="font-semibold text-foreground mb-3">Scope 3 Hotspots by GHG Protocol Category</h2>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-center">
+              {/* Composition pie */}
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={data.scope3_by_category}
+                    dataKey="emissions_tco2e"
+                    nameKey="label"
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={110}
+                    label={({ percentage }) => (percentage >= 4 ? `${percentage}%` : "")}
+                    labelLine={false}
+                    isAnimationActive={false}
+                  >
+                    {data.scope3_by_category.map((c, i) => (
+                      <Cell key={c.ghg_category} fill={SCOPE3_COLORS[i % SCOPE3_COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    formatter={(value, name) => [
+                      `${Number(value).toLocaleString()} tCO₂e`,
+                      name,
+                    ]}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+
+              {/* Detail table with matching colour swatches */}
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Category</TableHead>
+                    <TableHead className="text-right">tCO₂e</TableHead>
+                    <TableHead className="text-right">%</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {data.scope3_by_category.map((c, i) => (
+                    <TableRow key={c.ghg_category}>
+                      <TableCell>
+                        <span className="inline-flex items-center gap-2">
+                          <span
+                            className="inline-block h-2.5 w-2.5 rounded-sm shrink-0"
+                            style={{ backgroundColor: SCOPE3_COLORS[i % SCOPE3_COLORS.length] }}
+                          />
+                          {c.label}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-right">{c.emissions_tco2e.toLocaleString()}</TableCell>
+                      <TableCell className="text-right">{c.percentage}%</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </CardContent>
         </Card>
       )}

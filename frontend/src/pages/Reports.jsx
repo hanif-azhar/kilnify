@@ -13,6 +13,7 @@ import {
 import FormSelect from "../components/FormSelect.jsx";
 import { useCompany } from "../CompanyContext.jsx";
 import { api } from "../utils/api.js";
+import { SCOPE3_ONLY } from "../utils/catalog.js";
 
 export default function Reports() {
   const { selectedId, selected } = useCompany();
@@ -108,25 +109,29 @@ export default function Reports() {
               <TableRow>
                 <TableHead>Period</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead className="text-right">Total tCO₂e</TableHead>
-                <TableHead className="text-right">Clk/Cem</TableHead>
+                <TableHead className="text-right">{SCOPE3_ONLY ? "Scope 3 tCO₂e" : "Total tCO₂e"}</TableHead>
+                {!SCOPE3_ONLY && <TableHead className="text-right">Clk/Cem</TableHead>}
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {reports.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-muted-foreground">No reports yet.</TableCell>
+                  <TableCell colSpan={SCOPE3_ONLY ? 4 : 5} className="text-muted-foreground">No reports yet.</TableCell>
                 </TableRow>
               )}
               {reports.map((r) => (
                 <TableRow key={r.id}>
                   <TableCell>{r.report_period}</TableCell>
                   <TableCell className="capitalize">{r.status}</TableCell>
-                  <TableCell className="text-right">{Number(r.total_emissions).toLocaleString()}</TableCell>
                   <TableCell className="text-right">
-                    {r.clinker_to_cement_ratio != null ? `${(r.clinker_to_cement_ratio * 100).toFixed(1)}%` : "—"}
+                    {Number(SCOPE3_ONLY ? r.total_scope3 : r.total_emissions).toLocaleString()}
                   </TableCell>
+                  {!SCOPE3_ONLY && (
+                    <TableCell className="text-right">
+                      {r.clinker_to_cement_ratio != null ? `${(r.clinker_to_cement_ratio * 100).toFixed(1)}%` : "—"}
+                    </TableCell>
+                  )}
                   <TableCell className="text-right space-x-1 whitespace-nowrap">
                     <Button variant="ghost" size="sm" className="h-7" onClick={() => openDetail(r.id)}>view</Button>
                     <Button variant="ghost" size="sm" className="h-7" asChild>
@@ -179,24 +184,40 @@ function ReportDetailBody({ detail }) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <h3 className="font-semibold text-foreground mb-2">Scope Breakdown (tCO₂e)</h3>
-          <Row label="Scope 1 — Process" value={t(detail.total_scope1_process)} />
-          <Row label="Scope 1 — Combustion" value={t(detail.total_scope1_combustion)} />
-          <Row label="Scope 1 — Mobile" value={t(detail.total_scope1_mobile)} />
-          <Row label="Scope 1 — Fugitive" value={t(detail.total_scope1_fugitive)} />
-          <Row label="Scope 1 — Total" value={t(detail.total_scope1)} />
-          <Row label="Scope 2 (location-based)" value={t(detail.total_scope2_lb)} />
+          {!SCOPE3_ONLY && (
+            <>
+              <Row label="Scope 1 — Process" value={t(detail.total_scope1_process)} />
+              <Row label="Scope 1 — Combustion" value={t(detail.total_scope1_combustion)} />
+              <Row label="Scope 1 — Mobile" value={t(detail.total_scope1_mobile)} />
+              <Row label="Scope 1 — Fugitive" value={t(detail.total_scope1_fugitive)} />
+              <Row label="Scope 1 — Total" value={t(detail.total_scope1)} />
+              <Row label="Scope 2 (location-based)" value={t(detail.total_scope2_lb)} />
+            </>
+          )}
           <Row label="Scope 3" value={t(detail.total_scope3)} />
-          <Row label="TOTAL" value={`${t(detail.total_emissions)} tCO₂e`} />
+          <Row label="TOTAL" value={`${t(SCOPE3_ONLY ? detail.total_scope3 : detail.total_emissions)} tCO₂e`} />
           <Row label="Biogenic CO₂ (separate)" value={`${t(detail.biogenic_co2_total)} tCO₂`} />
         </div>
         <div>
-          <h3 className="font-semibold text-foreground mb-2">Intensity Metrics</h3>
-          <Row label="Per tonne cement" value={`${t(detail.specific_emissions_per_tonne_cement)} kgCO₂e/t`} />
-          <Row label="Per tonne clinker" value={`${t(detail.specific_emissions_per_tonne_clinker)} kgCO₂e/t`} />
-          <Row
-            label="Clinker-to-cement ratio"
-            value={detail.clinker_to_cement_ratio != null ? `${(detail.clinker_to_cement_ratio * 100).toFixed(1)}%` : "—"}
-          />
+          {SCOPE3_ONLY ? (
+            <h3 className="font-semibold text-foreground mb-2">Scope 3 by GHG Protocol Category</h3>
+          ) : (
+            <>
+              <h3 className="font-semibold text-foreground mb-2">Intensity Metrics</h3>
+              <Row label="Per tonne cement" value={`${t(detail.specific_emissions_per_tonne_cement)} kgCO₂e/t`} />
+              <Row label="Per tonne clinker" value={`${t(detail.specific_emissions_per_tonne_clinker)} kgCO₂e/t`} />
+              <Row
+                label="Clinker-to-cement ratio"
+                value={detail.clinker_to_cement_ratio != null ? `${(detail.clinker_to_cement_ratio * 100).toFixed(1)}%` : "—"}
+              />
+            </>
+          )}
+
+          {SCOPE3_ONLY
+            ? (detail.scope3_by_category || []).map((c) => (
+                <Row key={c.ghg_category} label={c.label} value={`${t(c.emissions_tco2e)} (${c.percentage}%)`} />
+              ))
+            : null}
 
           <h3 className="font-semibold text-foreground mb-2 mt-4">Top Hotspots</h3>
           {detail.top_hotspots.map((h) => (

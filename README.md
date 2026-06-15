@@ -41,6 +41,14 @@ Kilnify enables cement manufacturers to:
 All internal calculations use **kgCO₂e**. All reports and dashboard figures display in **tCO₂e**.
 Biogenic CO₂ from alternative fuels is tracked separately and excluded from GHG inventory totals, but disclosed in reports.
 
+> **Scope 3-only mode.** Kilnify ships configured as a **Scope 3 (value chain) specialist**: only Scope 3 emission
+> entries can be logged, and the dashboard/reports focus on the Scope 3 category breakdown (GHG Protocol Cat 1–11).
+> Scope 1/2 figures, cement/clinker intensity KPIs, and the Thermal Substitution Rate are hidden because they are
+> derived from Scope 1/2 data that is no longer collected. This is controlled by a single flag — `SCOPE3_ONLY` in
+> [`backend/constants.py`](backend/constants.py) and the mirrored `SCOPE3_ONLY` in
+> [`frontend/src/utils/catalog.js`](frontend/src/utils/catalog.js). Set both to `False` to restore the full
+> Scope 1/2/3 application.
+
 ---
 
 ## Facility Types

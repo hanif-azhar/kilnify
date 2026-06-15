@@ -10,7 +10,7 @@ import {
 import FormSelect from "../components/FormSelect.jsx";
 import { useCompany } from "../CompanyContext.jsx";
 import { api } from "../utils/api.js";
-import { categoriesForFacility, DATA_QUALITY } from "../utils/catalog.js";
+import { categoriesForFacility, DATA_QUALITY, SCOPE3_ONLY } from "../utils/catalog.js";
 import DataQualityBadge from "../components/DataQualityBadge.jsx";
 
 // CaO/MgO stoichiometry for Method B (matches backend emission_calculator).
@@ -36,6 +36,8 @@ export default function DataEntry() {
     const synthetic = {};
 
     for (const cf of customFactors) {
+      // In Scope 3-only mode, ignore custom factors for other scopes.
+      if (SCOPE3_ONLY && (cf.scope || "3") !== "3") continue;
       const facs = cf.applicable_facility_types || [];
       if (facility && facs.length > 0 && !facs.includes(facility)) continue;
       const sub = {
@@ -190,8 +192,9 @@ export default function DataEntry() {
       <div>
         <h1 className="text-2xl font-bold text-foreground mb-1">Data Entry</h1>
         <p className="text-sm text-muted-foreground mb-4">
-          Categories are filtered by facility type ({selected?.facility_type}). Process/kiln fields
-          appear only where applicable.
+          {SCOPE3_ONLY
+            ? `Scope 3 (value chain) categories only, filtered by facility type (${selected?.facility_type}).`
+            : `Categories are filtered by facility type (${selected?.facility_type}). Process/kiln fields appear only where applicable.`}
         </p>
         <Card>
           <CardContent className="pt-6">

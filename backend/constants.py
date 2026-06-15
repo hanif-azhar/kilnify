@@ -1,6 +1,11 @@
 """Enums and shared constants — never use free-text strings for these in logic."""
 from enum import Enum
 
+# When True, Kilnify operates as a Scope 3-only tool: only Scope 3 emission
+# entries may be created, and the dashboard/reports omit Scope 1 & 2 figures.
+# Flip to False to restore the full Scope 1/2/3 application.
+SCOPE3_ONLY = True
+
 
 class FacilityType(str, Enum):
     CEMENT_PLANT = "cement_plant"

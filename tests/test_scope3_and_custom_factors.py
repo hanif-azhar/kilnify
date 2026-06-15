@@ -1,4 +1,7 @@
 """Tests for the expanded Scope 3 categories, TSR metrics, and custom factors."""
+import pytest
+
+from backend.constants import SCOPE3_ONLY
 
 
 def _emit(client, company_id, **overrides):
@@ -56,6 +59,7 @@ def test_scope3_category_breakdown(client, cement_company):
 
 
 # --------------------------- TSR / alternative fuel ---------------------------
+@pytest.mark.skipif(SCOPE3_ONLY, reason="TSR derives from Scope 1 kiln fuel, not collected in Scope 3-only mode")
 def test_thermal_substitution_rate(client, cement_company):
     cid = cement_company["id"]
     # 100 t coal (26.85 GJ/t = 2685 GJ) + 100 t RDF (18 GJ/t = 1800 GJ).

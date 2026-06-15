@@ -105,18 +105,19 @@ def production_entry(client, cement_company):
 
 @pytest.fixture
 def emission_entry(client, cement_company):
+    # Scope 3 entry so the fixture is valid under SCOPE3_ONLY.
     resp = client.post(
         "/api/emissions/",
         json={
             "company_id": cement_company["id"],
-            "scope": "1",
-            "category": "clinker_calcination",
-            "sub_category": "method_a",
-            "activity_data": 150000.0,
-            "activity_unit": "tonnes_clinker",
-            "emission_factor": 525.0,
-            "emission_factor_unit": "kgCO2e/tonne_clinker",
-            "emission_factor_source": "WBCSD CSI 2022",
+            "scope": "3",
+            "category": "transport_outbound",
+            "sub_category": "truck_heavy_over_32t",
+            "activity_data": 1_000_000.0,
+            "activity_unit": "tonne_km",
+            "emission_factor": 0.062,
+            "emission_factor_unit": "kgCO2e/tonne_km",
+            "emission_factor_source": "DEFRA 2024",
             "period_start": "2025-01-01",
             "period_end": "2025-01-31",
             "data_quality": "calculated",
